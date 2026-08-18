@@ -6,14 +6,14 @@
     --v2-grey-200: #f2f2f2ff;
     --v2-grey-300: #eeeeeeff;
     --v2-grey-400: #dbdbdbff;
-    --v2-grey-500: #aeaeaeff;
-    --v2-grey-600: #808080ff;
-    --v2-grey-700: #5c5c5cff;
-    --v2-grey-800: #3a3a3aff;
-    --v2-grey-900: #2e2e2eff;
-    --v2-grey-1000: #242424ff;
-    --v2-grey-1100: #161616ff;
-    --v2-grey-1200: #080808ff;
+    --v2-grey-500: #9da3af;
+    --v2-grey-600: #6b7280;
+    --v2-grey-700: #4b5563;
+    --v2-grey-800: #2c2d38;
+    --v2-grey-900: #22232c;
+    --v2-grey-1000: #1a1b22;
+    --v2-grey-1100: #121318;
+    --v2-grey-1200: #0d0e12;
 
     /* ── Alpha Dark ── */
     --v2-alpha-dark-100: #000000ff;

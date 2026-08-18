@@ -251,12 +251,12 @@
   }
 
   :not(pre) > code[data-inline-code-kind="path"] {
-    color: var(--markdown-inline-code-path-color);
-    background: color-mix(
-      in oklch,
-      var(--markdown-inline-code-path-color) var(--markdown-inline-code-bg-mix),
-      transparent
-    );
+    color: #fcd34d;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 500;
   }
 
   a.external-link > code[data-inline-code-kind="url"] {

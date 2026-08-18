@@ -133,11 +133,14 @@ function TimelineThinkingRow(props: { reasoningHeading?: string; showReasoningSu
   const language = useLanguage()
 
   return (
-    <div data-slot="session-turn-thinking">
-      <TextShimmer text={language.t("ui.sessionTurn.status.thinking")} />
-      <Show when={!props.showReasoningSummaries}>
-        <TextReveal text={props.reasoningHeading} class="session-turn-thinking-heading" travel={25} duration={700} />
-      </Show>
+    <div data-slot="session-turn-thinking" class="my-2">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-medium text-text-muted hover:bg-white/[0.08] transition-colors cursor-default">
+        <TextShimmer text={language.t("ui.sessionTurn.status.thinking")} />
+        <Show when={!props.showReasoningSummaries && props.reasoningHeading}>
+          <TextReveal text={props.reasoningHeading} class="session-turn-thinking-heading text-text-weak truncate max-w-[280px]" travel={25} duration={700} />
+        </Show>
+        <Icon name="chevron-right" size="small" class="text-icon-weak" />
+      </div>
     </div>
   )
 }
@@ -153,23 +156,44 @@ function TimelineDiffSummaryRow(props: { diffs: SummaryDiff[] }) {
   const expanded = () => state.expanded
   const overflow = createMemo(() => Math.max(0, props.diffs.length - maxFiles))
   const visible = createMemo(() => (showAll() ? props.diffs : props.diffs.slice(0, maxFiles)))
+  const totalAdditions = createMemo(() =>
+    props.diffs.reduce((acc, d) => acc + ("additions" in d ? (d.additions ?? 0) : 0), 0),
+  )
+  const totalDeletions = createMemo(() =>
+    props.diffs.reduce((acc, d) => acc + ("deletions" in d ? (d.deletions ?? 0) : 0), 0),
+  )
 
   return (
     <div
       data-slot="session-turn-diffs"
       data-component="session-turn-diffs-group"
       data-show-all={showAll() || undefined}
+      class="my-2"
     >
-      <div data-slot="session-turn-diffs-header">
-        <span data-slot="session-turn-diffs-label">
-          {language.plural("ui.sessionTurn.diffs.changed", props.diffs.length)}
-        </span>
-        <DiffChanges changes={props.diffs} />
-        <Show when={overflow() > 0}>
-          <span data-slot="session-turn-diffs-toggle" onClick={() => setState("showAll", !showAll())}>
-            {showAll() ? language.t("ui.sessionTurn.diffs.showLess") : language.t("ui.sessionTurn.diffs.showAll")}
+      <div
+        data-slot="session-turn-diffs-header"
+        class="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.07] transition-all cursor-pointer"
+        onClick={() => setState("showAll", !showAll())}
+      >
+        <div class="flex items-center gap-2 text-[13px] text-text-strong font-medium">
+          <span>
+            {language.plural("ui.sessionTurn.diffs.changed", props.diffs.length)}
           </span>
-        </Show>
+          <span class="text-xs font-mono text-emerald-400 font-normal">+{totalAdditions()}</span>
+          <span class="text-xs font-mono text-rose-400 font-normal">-{totalDeletions()}</span>
+          <Icon name={showAll() ? "chevron-down" : "chevron-right"} size="small" class="text-icon-muted" />
+        </div>
+        <button
+          type="button"
+          class="px-2.5 py-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] text-xs font-medium text-text-strong transition-colors border border-white/10 flex items-center gap-1.5"
+          onClick={(e) => {
+            e.stopPropagation()
+            setState("showAll", !showAll())
+          }}
+        >
+          <Icon name="review" size="small" class="text-icon-muted" />
+          <span>Review</span>
+        </button>
       </div>
       <div data-component="session-turn-diffs-content">
         <Accordion

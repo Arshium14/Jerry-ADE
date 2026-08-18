@@ -36,6 +36,7 @@ import { useGlobal } from "@/context/global"
 import { ServerConnection, useServer } from "@/context/server"
 import { tabKey, useTabs } from "@/context/tabs"
 import type { PromptSession } from "@/context/prompt"
+import { JerryMark } from "@opencode-ai/ui/logo"
 import "./titlebar.css"
 import { newTabTooltipKeybind } from "./command-tooltip-keybind"
 import { normalizeSessionInfo } from "@/utils/session"
@@ -368,6 +369,12 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
                   "md:pl-4": !macTrafficLights(),
                 }}
               >
+                <div class="flex items-center gap-2 shrink-0 mr-1">
+                  <JerryMark class="size-5 shrink-0" />
+                  <span class="text-[13px] font-semibold text-text-strong font-mono tracking-tight hidden md:inline">
+                    Antigravity
+                  </span>
+                </div>
                 <ChannelIndicator debugTools={props.debugTools} />
                 <Show when={windows() || linux()}>
                   <WindowsAppMenu command={command} platform={platform} variant="v2" />
@@ -607,10 +614,17 @@ type TitlebarV2RightState = {
 
 function TitlebarV2Right(props: { state: TitlebarV2RightState }) {
   return (
-    <div class="relative z-20 flex shrink-0 items-center justify-end gap-0 overflow-visible">
+    <div class="relative z-20 flex shrink-0 items-center justify-end gap-2 overflow-visible">
       <Show when={props.state.update.visible}>
         <TitlebarUpdateIconButton state={props.state.update} />
       </Show>
+      <button
+        type="button"
+        class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-text-muted hover:text-text-strong border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.08] transition-colors"
+      >
+        <IconV2 name="monitor" size="small" class="text-icon-muted" />
+        <span>Install IDE</span>
+      </button>
       <div id="opencode-titlebar-right" class="flex shrink-0 items-center justify-end gap-0" />
     </div>
   )

@@ -1735,20 +1735,31 @@ PART_MAPPING["text"] = function TextPartDisplay(props) {
           <PacedMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
         </div>
         <Show when={showCopy()}>
-          <div data-slot="text-part-copy-wrapper" data-interrupted={interrupted() ? "" : undefined}>
-            <MessageActionButton
-              icon={copied() ? "check" : "copy"}
-              label={copied() ? i18n.t("ui.message.copied") : i18n.t("ui.message.copyResponse")}
-              useV2={props.useV2Actions}
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={handleCopy}
-              aria-label={copied() ? i18n.t("ui.message.copied") : i18n.t("ui.message.copyResponse")}
-            />
-            <Show when={meta()}>
-              <span data-slot="text-part-meta" class="text-12-regular text-text-weak cursor-default">
-                {meta()}
-              </span>
-            </Show>
+          <div data-slot="text-part-copy-wrapper" data-interrupted={interrupted() ? "" : undefined} class="flex items-center justify-between gap-3 pt-2 text-text-weak text-xs border-t border-white/[0.04] mt-2">
+            <div class="flex items-center gap-2">
+              <Show when={(props.message as AssistantMessage).time?.created}>
+                {(created) => (
+                  <span class="text-[11px] text-text-weak/60 font-mono">
+                    {new Date(created()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}, {new Date(created()).toLocaleDateString([], { month: "numeric", day: "numeric", year: "numeric" })}
+                  </span>
+                )}
+              </Show>
+              <Show when={meta()}>
+                <span data-slot="text-part-meta" class="text-[11px] text-text-weak/60 cursor-default">
+                  {meta()}
+                </span>
+              </Show>
+            </div>
+            <div class="flex items-center gap-1">
+              <MessageActionButton
+                icon={copied() ? "check" : "copy"}
+                label={copied() ? i18n.t("ui.message.copied") : i18n.t("ui.message.copyResponse")}
+                useV2={props.useV2Actions}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={handleCopy}
+                aria-label={copied() ? i18n.t("ui.message.copied") : i18n.t("ui.message.copyResponse")}
+              />
+            </div>
           </div>
         </Show>
       </div>

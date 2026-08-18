@@ -1,6 +1,30 @@
 import { onMount, type ComponentProps, splitProps } from "solid-js"
 
 const icons = {
+  jerry: {
+    viewBox: "0 0 512 512",
+    body: `<rect x="238" y="160" width="36" height="46" rx="18" fill="#1b4294"/><circle cx="256" cy="146" r="30" fill="#1b4294"/><rect x="88" y="220" width="46" height="150" rx="23" fill="#1b4294"/><rect x="378" y="220" width="46" height="150" rx="23" fill="#1b4294"/><rect x="114" y="198" width="284" height="194" rx="56" fill="#2d88eb"/><circle cx="190" cy="295" r="45" fill="#ffffff"/><circle cx="322" cy="295" r="45" fill="#ffffff"/><circle cx="202" cy="297" r="22" fill="#1e202e"/><circle cx="310" cy="297" r="22" fill="#1e202e"/><path d="M 228 342 Q 256 368 284 342" stroke="#1e202e" stroke-width="12" stroke-linecap="round" fill="none"/>`,
+  },
+  robot: {
+    viewBox: "0 0 512 512",
+    body: `<rect x="238" y="160" width="36" height="46" rx="18" fill="#1b4294"/><circle cx="256" cy="146" r="30" fill="#1b4294"/><rect x="88" y="220" width="46" height="150" rx="23" fill="#1b4294"/><rect x="378" y="220" width="46" height="150" rx="23" fill="#1b4294"/><rect x="114" y="198" width="284" height="194" rx="56" fill="#2d88eb"/><circle cx="190" cy="295" r="45" fill="#ffffff"/><circle cx="322" cy="295" r="45" fill="#ffffff"/><circle cx="202" cy="297" r="22" fill="#1e202e"/><circle cx="310" cy="297" r="22" fill="#1e202e"/><path d="M 228 342 Q 256 368 284 342" stroke="#1e202e" stroke-width="12" stroke-linecap="round" fill="none"/>`,
+  },
+  microphone: {
+    viewBox: "0 0 16 16",
+    body: `<path d="M8 10C9.10457 10 10 9.10457 10 8V4C10 2.89543 9.10457 2 8 2C6.89543 2 6 2.89543 6 4V8C6 9.10457 6.89543 10 8 10Z" stroke="currentColor"/><path d="M12.5 7V8C12.5 10.4853 10.4853 12.5 8 12.5C5.51472 12.5 3.5 10.4853 3.5 8V7M8 12.5V15M6 15H10" stroke="currentColor" stroke-linecap="round"/>`,
+  },
+  history: {
+    viewBox: "0 0 16 16",
+    body: `<path d="M8 2.5C4.96243 2.5 2.5 4.96243 2.5 8C2.5 9.47514 3.08277 10.8143 4.03553 11.8M1.5 8H3.5M8 4.5V8L10.5 9.5" stroke="currentColor" stroke-linecap="round"/><circle cx="8" cy="8" r="5.5" stroke="currentColor"/>`,
+  },
+  schedule: {
+    viewBox: "0 0 16 16",
+    body: `<rect x="2.5" y="3.5" width="11" height="10" rx="1.5" stroke="currentColor"/><path d="M5.5 2V4M10.5 2V4M2.5 6.5H13.5M5.5 9H6.5M9.5 9H10.5M5.5 11.5H6.5" stroke="currentColor" stroke-linecap="round"/>`,
+  },
+  filter: {
+    viewBox: "0 0 16 16",
+    body: `<path d="M2.5 3.5H13.5L9.5 8.5V13.5L6.5 11.5V8.5L2.5 3.5Z" stroke="currentColor" stroke-linejoin="round"/>`,
+  },
   edit: {
     viewBox: "0 0 16 16",
     body: `<path d="M13.5555 8.21534V13.5556H2.44434L2.44434 2.4445H7.78462M6.88878 9.11119C6.88878 9.11119 8.96327 9.0367 9.69678 8.3032L14.0301 3.96986C14.5824 3.4176 14.5824 2.52213 14.0301 1.96986C13.4778 1.4176 12.5824 1.4176 12.0301 1.96986L7.69678 6.3032C7.00513 6.99484 6.88878 9.11119 6.88878 9.11119Z" stroke="currentColor"/>`,

@@ -1,6 +1,7 @@
 import { ImagePreview } from "@opencode-ai/ui/image-preview"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
 import { ProviderIcon } from "@opencode-ai/ui/provider-icon"
+import { JerryMark } from "@opencode-ai/ui/logo"
 import { ButtonV2 } from "@opencode-ai/ui/v2/button-v2"
 import { Icon } from "@opencode-ai/ui/v2/icon"
 import { KeybindV2 } from "@opencode-ai/ui/v2/keybind-v2"
@@ -481,21 +482,27 @@ function PromptInputV2ModelControl(props: {
 }) {
   const shouldAnimate = createMemo<boolean>((previous) => previous ?? props.loading)
   const content = () => (
-    <>
-      <Show when={props.providerID}>
+    <div class="flex items-center gap-1.5 min-w-0">
+      <Show
+        when={props.providerID}
+        fallback={<JerryMark class="size-3.5 shrink-0" />}
+      >
         {(providerID) => (
           <ProviderIcon
             id={providerID()}
-            class="size-4 shrink-0 opacity-40 group-hover:opacity-100 transition-opacity duration-150"
+            class="size-3.5 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity duration-150"
             style={{ "will-change": "opacity", transform: "translateZ(0)" }}
           />
         )}
       </Show>
-      <span class="truncate leading-4">{props.modelName}</span>
-      <span class="-ml-0.5 -mr-1 flex shrink-0">
+      <span class="truncate text-[12px] font-medium leading-4 text-text-strong">{props.modelName}</span>
+      <span class="text-[10px] px-1 py-0.2 rounded bg-amber-500/15 text-amber-400 font-mono flex items-center gap-0.5 shrink-0">
+        ⚡
+      </span>
+      <span class="-ml-0.5 -mr-1 flex shrink-0 text-text-weak">
         <Icon name="chevron-down" />
       </span>
-    </>
+    </div>
   )
   return (
     <Show when={!props.loading}>
@@ -517,9 +524,9 @@ function PromptInputV2ModelControl(props: {
               data-control-type="dialog"
               variant="ghost-muted"
               size="normal"
-              class="min-w-0 max-w-[220px] justify-start ![font-weight:440] group"
+              class="min-w-0 max-w-[260px] justify-start rounded-full px-2.5 py-1 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] ![font-weight:440] group transition-all"
               classList={{ "animate-in fade-in": shouldAnimate() }}
-              style={{ height: "28px" }}
+              style={{ height: "26px" }}
               onClick={props.onUnpaidClick}
             >
               {content()}
@@ -533,8 +540,8 @@ function PromptInputV2ModelControl(props: {
                 {...triggerProps}
                 variant="ghost-muted"
                 size="normal"
-                style={{ height: "28px" }}
-                class="min-w-0 max-w-[220px] justify-start ![font-weight:440] group"
+                style={{ height: "26px" }}
+                class="min-w-0 max-w-[260px] justify-start rounded-full px-2.5 py-1 bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] ![font-weight:440] group transition-all"
                 classList={{ "animate-in fade-in": shouldAnimate() }}
                 data-action="prompt-model"
                 data-control-type="popover"

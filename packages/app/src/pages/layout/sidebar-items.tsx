@@ -89,6 +89,22 @@ export type SessionItemProps = {
   archiveSession: (session: Session) => Promise<void>
 }
 
+function formatShortTime(timestamp?: number): string | undefined {
+  if (!timestamp) return undefined
+  const diffMs = Date.now() - timestamp
+  if (diffMs < 0) return undefined
+  const mins = Math.floor(diffMs / 60_000)
+  if (mins < 60) return `${Math.max(1, mins)}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h`
+  const days = Math.floor(hours / 24)
+  if (days < 30) return `${days}d`
+  const months = Math.floor(days / 30)
+  if (months < 12) return `${months}mo`
+  const years = Math.floor(days / 365)
+  return `${years}y`
+}
+
 const SessionRow = (props: {
   session: Session
   slug: string
@@ -104,7 +120,13 @@ const SessionRow = (props: {
   warmPress: () => void
   warmFocus: () => void
 }): JSX.Element => {
+  const params = useParams()
   const title = () => sessionTitle(props.session.title)
+  const timeLabel = createMemo(() => {
+    const raw = props.session.time?.updated ?? props.session.time?.created
+    return formatShortTime(raw)
+  })
+  const isActive = () => params.id === props.session.id
 
   return (
     <A
@@ -119,26 +141,29 @@ const SessionRow = (props: {
     >
       <Show when={props.isWorking() || props.hasPermissions() || props.hasError() || props.unseenCount() > 0}>
         <div
-          class="shrink-0 size-6 flex items-center justify-center"
+          class="shrink-0 size-4 flex items-center justify-center"
           style={{ color: props.tint() ?? "var(--icon-interactive-base)" }}
         >
           <Switch>
             <Match when={props.isWorking()}>
-              <Spinner class="size-[15px]" />
+              <Spinner class="size-[13px]" />
             </Match>
             <Match when={props.hasPermissions()}>
-              <div class="size-1.5 rounded-full bg-surface-warning-strong" />
+              <div class="size-2 rounded-full bg-surface-warning-strong" />
             </Match>
             <Match when={props.hasError()}>
-              <div class="size-1.5 rounded-full bg-text-diff-delete-base" />
+              <div class="size-2 rounded-full bg-text-diff-delete-base" />
             </Match>
             <Match when={props.unseenCount() > 0}>
-              <div class="size-1.5 rounded-full bg-text-interactive-base" />
+              <div class="size-2 rounded-full bg-[#3b82f6]" />
             </Match>
           </Switch>
         </div>
       </Show>
-      <span class="text-14-regular text-text-strong min-w-0 flex-1 truncate">{title()}</span>
+      <span class="text-[13px] text-text-strong min-w-0 flex-1 truncate font-normal leading-5">{title()}</span>
+      <Show when={timeLabel()}>
+        <span class="text-[11px] text-text-weak/70 font-mono shrink-0 pl-1">{timeLabel()}</span>
+      </Show>
     </A>
   )
 }
@@ -294,21 +319,19 @@ export const NewSessionItem = (props: {
     <A
       href={`/${props.slug}/session`}
       end
-      class={`flex items-center gap-2 min-w-0 w-full text-left focus:outline-none ${props.dense ? "py-0.5" : "py-1"}`}
+      class="flex items-center justify-center gap-2 w-full text-center focus:outline-none py-1.5 px-3 rounded-full border border-white/10 hover:border-white/20 bg-white/[0.04] hover:bg-white/[0.08] transition-all text-[13px] font-medium text-text-strong shadow-sm"
       onClick={() => {
         if (layout.sidebar.opened()) return
         props.clearHoverProjectSoon()
       }}
     >
-      <div class="shrink-0 size-6 flex items-center justify-center">
-        <IconV2 name="edit" size="small" class="text-icon-weak" />
-      </div>
-      <span class="text-14-regular text-text-strong min-w-0 flex-1 truncate">{label}</span>
+      <IconV2 name="plus" size="small" class="text-icon-base" />
+      <span class="truncate">{label}</span>
     </A>
   )
 
   return (
-    <div class="group/session relative w-full min-w-0 rounded-md cursor-default transition-colors pl-2 pr-3 hover:bg-surface-raised-base-hover [&:has(:focus-visible)]:bg-surface-raised-base-hover has-[.active]:bg-surface-base-active">
+    <div class="group/session relative w-full min-w-0 cursor-default px-1 py-1 mb-1">
       <Show
         when={!tooltip()}
         fallback={

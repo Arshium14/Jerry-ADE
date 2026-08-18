@@ -246,52 +246,98 @@ const WorkspaceSessionList = (props: {
   hasMore: Accessor<boolean>
   loadMore: () => Promise<void>
   language: ReturnType<typeof useLanguage>
-}): JSX.Element => (
-  <nav class="flex flex-col gap-1">
-    <Show when={props.showNew()}>
+}): JSX.Element => {
+  const navigate = useNavigate()
+  return (
+    <nav class="flex flex-col gap-1 px-1">
+      {/* Prominent + New Conversation button */}
       <NewSessionItem
         slug={props.slug()}
         mobile={props.mobile}
         sidebarExpanded={props.ctx.sidebarExpanded}
         clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
       />
-    </Show>
-    <Show when={props.loading()}>
-      <SessionSkeleton />
-    </Show>
-    <For each={props.sessions()}>
-      {(session) => (
-        <SessionItem
-          session={session}
-          list={props.sessions()}
-          navList={props.ctx.navList}
-          slug={props.slug()}
-          mobile={props.mobile}
-          showChild
-          sidebarExpanded={props.ctx.sidebarExpanded}
-          clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
-          prefetchSession={props.ctx.prefetchSession}
-          archiveSession={props.ctx.archiveSession}
-        />
-      )}
-    </For>
-    <Show when={props.hasMore()}>
-      <div class="relative w-full py-1">
-        <Button
-          variant="ghost"
-          class="flex w-full text-left justify-start text-14-regular text-text-weak pl-2 pr-10"
-          size="large"
-          onClick={(e: MouseEvent) => {
-            void props.loadMore()
-            ;(e.currentTarget as HTMLButtonElement).blur()
+
+      {/* Quick Navigation Items (Codex / Antigravity style) */}
+      <div class="flex flex-col gap-0.5 py-1 mb-2 border-b border-white/[0.06]">
+        <button
+          type="button"
+          class="flex items-center gap-2.5 w-full text-left px-2.5 py-1.5 rounded-lg text-[13px] text-text-muted hover:text-text-strong hover:bg-white/[0.05] transition-colors"
+          onClick={() => {
+            props.ctx.clearHoverProjectSoon()
+            // Navigate to home or trigger session search
+            navigate("/")
           }}
         >
-          {props.language.t("common.loadMore")}
-        </Button>
+          <IconV2 name="history" size="small" class="text-icon-muted shrink-0" />
+          <span class="truncate">Conversation History</span>
+        </button>
+        <button
+          type="button"
+          class="flex items-center gap-2.5 w-full text-left px-2.5 py-1.5 rounded-lg text-[13px] text-text-muted hover:text-text-strong hover:bg-white/[0.05] transition-colors"
+          onClick={() => {
+            props.ctx.clearHoverProjectSoon()
+          }}
+        >
+          <IconV2 name="schedule" size="small" class="text-icon-muted shrink-0" />
+          <span class="truncate">Scheduled Tasks</span>
+        </button>
       </div>
-    </Show>
-  </nav>
-)
+
+      {/* Conversations Section Header */}
+      <div class="flex items-center justify-between px-2 py-1 text-[11px] font-semibold text-text-weak uppercase tracking-wider">
+        <span>Conversations</span>
+        <button
+          type="button"
+          class="size-5 rounded hover:bg-white/[0.08] flex items-center justify-center text-text-weak hover:text-text-strong transition-colors"
+          title={props.language.t("command.session.new")}
+          aria-label={props.language.t("command.session.new")}
+          onClick={() => {
+            props.ctx.clearHoverProjectSoon()
+            navigate(`/${props.slug()}/session`)
+          }}
+        >
+          <IconV2 name="plus" size="small" />
+        </button>
+      </div>
+
+      <Show when={props.loading()}>
+        <SessionSkeleton />
+      </Show>
+      <For each={props.sessions()}>
+        {(session) => (
+          <SessionItem
+            session={session}
+            list={props.sessions()}
+            navList={props.ctx.navList}
+            slug={props.slug()}
+            mobile={props.mobile}
+            showChild
+            sidebarExpanded={props.ctx.sidebarExpanded}
+            clearHoverProjectSoon={props.ctx.clearHoverProjectSoon}
+            prefetchSession={props.ctx.prefetchSession}
+            archiveSession={props.ctx.archiveSession}
+          />
+        )}
+      </For>
+      <Show when={props.hasMore()}>
+        <div class="relative w-full py-1">
+          <Button
+            variant="ghost"
+            class="flex w-full text-left justify-start text-14-regular text-text-weak pl-2 pr-10"
+            size="large"
+            onClick={(e: MouseEvent) => {
+              void props.loadMore()
+              ;(e.currentTarget as HTMLButtonElement).blur()
+            }}
+          >
+            {props.language.t("common.loadMore")}
+          </Button>
+        </div>
+      </Show>
+    </nav>
+  )
+}
 
 export const SortableWorkspace = (props: {
   ctx: WorkspaceSidebarContext

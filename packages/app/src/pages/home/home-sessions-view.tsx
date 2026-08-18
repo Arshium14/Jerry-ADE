@@ -6,6 +6,7 @@ import { ButtonV2 } from "@opencode-ai/ui/v2/button-v2"
 import { Icon as IconV2 } from "@opencode-ai/ui/v2/icon"
 import { IconButtonV2 } from "@opencode-ai/ui/v2/icon-button-v2"
 import { TooltipV2 } from "@opencode-ai/ui/v2/tooltip-v2"
+import { JerryMark } from "@opencode-ai/ui/logo"
 import { useLanguage } from "@/context/language"
 import { ServerConnection } from "@/context/server"
 import { SessionTabAvatarView } from "@/pages/layout/session-tab-avatar"
@@ -509,9 +510,10 @@ function HomeSessionProjectName(props: { name: string; search?: boolean }) {
 function HomeSessionsEmpty(props: { onNewSession?: () => void; language: ReturnType<typeof useLanguage> }) {
   return (
     <div class="flex min-h-full flex-col items-center gap-4 px-6 pt-[52px] text-center">
+      <JerryMark class="size-16 shrink-0 opacity-80 mb-2 drop-shadow-md" />
       <div
         class={`
-          shrink-0 text-[13px] leading-[13px] tracking-[-0.04px]
+          shrink-0 text-[14px] leading-[14px] tracking-[-0.04px]
           text-v2-text-text-base [font-weight:530]
         `}
       >
@@ -520,7 +522,7 @@ function HomeSessionsEmpty(props: { onNewSession?: () => void; language: ReturnT
       <p
         class={`
           mb-1 text-center text-[13px] leading-5 tracking-[-0.04px]
-          text-v2-text-text-muted [font-weight:440]
+          text-v2-text-text-muted [font-weight:440] max-w-sm
         `}
       >
         {props.language.t("home.sessions.empty.description")}
