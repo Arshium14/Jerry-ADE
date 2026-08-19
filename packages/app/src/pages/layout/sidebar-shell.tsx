@@ -70,8 +70,15 @@ function ProjectSection(props: {
   const [expanded, setExpanded] = createSignal(true)
   const [showAll, setShowAll] = createSignal(false)
 
-  const [sessionStore] = serverSync().child(props.project.worktree)
-  const sessions = createMemo(() => sortedRootSessions(sessionStore, Date.now()))
+  const dirs = createMemo(() => [props.project.worktree, ...(props.project.sandboxes ?? [])])
+  const sessions = createMemo(() => {
+    return dirs()
+      .flatMap((dir) => {
+        const [store] = serverSync().child(dir)
+        return sortedRootSessions(store, Date.now())
+      })
+      .sort((a, b) => (b.time?.updated ?? b.time?.created ?? 0) - (a.time?.updated ?? a.time?.created ?? 0))
+  })
 
   const isCurrentProject = createMemo(() => {
     return props.currentDir?.() === props.project.worktree
@@ -79,8 +86,8 @@ function ProjectSection(props: {
 
   const visibleSessions = createMemo(() => {
     const list = sessions()
-    if (showAll() || list.length <= 5) return list
-    return list.slice(0, 5)
+    if (showAll() || list.length <= 10) return list
+    return list.slice(0, 10)
   })
 
   const name = createMemo(() => displayName(props.project))
@@ -346,28 +353,6 @@ export function SidebarContent(props: SidebarContentProps): JSX.Element {
             <path d="M6 9v12" />
           </svg>
           <span>Pull requests</span>
-        </button>
-
-        <button
-          type="button"
-          class="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg text-text-base hover:text-text-strong hover:bg-surface-base transition-colors"
-        >
-          <svg class="size-4 text-text-weak" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-          <span>Scheduled</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={props.onOpenSettings}
-          class="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg text-text-base hover:text-text-strong hover:bg-surface-base transition-colors"
-        >
-          <svg class="size-4 text-text-weak" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-          </svg>
-          <span>Plugins</span>
         </button>
       </div>
 
