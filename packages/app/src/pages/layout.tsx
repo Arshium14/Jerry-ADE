@@ -2233,26 +2233,28 @@ export default function LegacyLayout(props: ParentProps) {
     <SidebarContent
       mobile={mobile}
       opened={() => layout.sidebar.opened()}
-      aimMove={aim.move}
       projects={projects}
-      renderProject={(project) => (
-        <SortableProject ctx={projectSidebarCtx} project={project} sortNow={sortNow} mobile={mobile} />
-      )}
-      handleDragStart={handleDragStart}
-      handleDragEnd={handleDragEnd}
-      handleDragOver={handleDragOver}
-      openProjectLabel={language.t("command.project.open")}
-      openProjectKeybind={() => command.keybind("project.open")}
+      currentProject={currentProject}
+      currentDir={currentDir}
+      onNewChat={(project?: LocalProject) => {
+        const dir = project?.worktree ?? currentProject()?.worktree ?? projects()[0]?.worktree
+        if (dir) navigateWithSidebarReset(`/${base64Encode(dir)}/session`)
+      }}
+      onNavigateSession={(directory: string, sessionId: string) => {
+        navigateWithSidebarReset(`/${base64Encode(directory)}/session/${sessionId}`)
+      }}
+      onNavigateProject={(directory: string) => {
+        navigateWithSidebarReset(`/${base64Encode(directory)}/session`)
+      }}
       onOpenProject={chooseProject}
-      renderProjectOverlay={projectOverlay}
-      settingsLabel={() => language.t("sidebar.settings")}
-      settingsKeybind={() => command.keybind("settings.open")}
+      onCloseProject={closeProject}
+      onEditProject={(project: LocalProject) => {
+        if (server.current) showEditProjectDialog(server.current, project)
+      }}
       onOpenSettings={openSettings}
-      helpLabel={() => language.t("sidebar.help")}
       onOpenHelp={() => platform.openExternal("https://opencode.ai/desktop-feedback")}
-      renderPanel={() =>
-        mobile ? <SidebarPanel project={currentProject} mobile /> : <SidebarPanel project={currentProject} merged />
-      }
+      onSearch={() => command.trigger("file.search")}
+      onToggleSidebar={() => layout.sidebar.toggle()}
     />
   )
 
@@ -2321,7 +2323,7 @@ export default function LegacyLayout(props: ParentProps) {
 
             <div
               class="hidden xl:block pointer-events-none absolute top-0 end-0 z-0 border-t border-border-weaker-base"
-              style={{ "inset-inline-start": "calc(4rem + 12px)" }}
+              style={{ "inset-inline-start": layout.sidebar.opened() ? `${side()}px` : "0px" }}
             />
 
             <div class="xl:hidden">
@@ -2358,7 +2360,7 @@ export default function LegacyLayout(props: ParentProps) {
                   !state.sizing,
               }}
               style={{
-                "--main-left": layout.sidebar.opened() ? `${side()}px` : "4rem",
+                "--main-left": layout.sidebar.opened() ? `${side()}px` : "0px",
               }}
             >
               <main
