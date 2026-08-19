@@ -3,9 +3,9 @@ import { resolveThemeVariant } from "@opencode-ai/ui/theme/resolve"
 import type { DesktopTheme } from "@opencode-ai/ui/theme/types"
 import oc2ThemeJson from "../../../ui/src/theme/themes/oc-2.json"
 import { randomUUID } from "node:crypto"
-import { rmSync } from "node:fs"
+import { rmSync, promises as fsPromises } from "node:fs"
 import { app, BrowserWindow, dialog, net, nativeImage, nativeTheme, protocol, shell } from "electron"
-import { dirname, isAbsolute, join, relative, resolve } from "node:path"
+import { dirname, extname, isAbsolute, join, relative, resolve } from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
 import type { TitlebarTheme } from "../preload/types"
 import { exportDebugLogs, write as writeLog } from "./logging"
@@ -288,6 +288,35 @@ function windowDataFile(id: string) {
   return `opencode.window.${id.replace(/[^a-zA-Z0-9._-]/g, "-")}.dat`
 }
 
+const MIME_TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".cjs": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".wasm": "application/wasm",
+  ".json": "application/json",
+  ".webmanifest": "application/manifest+json",
+  ".mp4": "video/mp4",
+  ".aac": "audio/aac",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".map": "application/json",
+}
+
+function getMimeType(filePath: string): string {
+  const ext = extname(filePath).toLowerCase()
+  return MIME_TYPES[ext] ?? "application/octet-stream"
+}
+
 export function registerRendererProtocol() {
   if (protocol.isProtocolHandled(rendererProtocol)) return
 
@@ -298,7 +327,12 @@ export function registerRendererProtocol() {
       return new Response("Not found", { status: 404 })
     }
 
-    const file = resolve(rendererRoot, `.${decodeURIComponent(url.pathname)}`)
+    let pathname = decodeURIComponent(url.pathname)
+    if (!pathname || pathname === "/") {
+      pathname = "/index.html"
+    }
+
+    const file = resolve(rendererRoot, `.${pathname}`)
     const rel = relative(rendererRoot, file)
     if (rel.startsWith("..") || isAbsolute(rel)) {
       writeLog("protocol", "rejected path", { url: request.url, file }, "warn")
@@ -306,24 +340,18 @@ export function registerRendererProtocol() {
     }
 
     try {
-      const range = request.headers.get("range")
-      const response = await net.fetch(pathToFileURL(file).toString(), {
-        headers: range ? { range } : undefined,
+      const data = await fsPromises.readFile(file)
+      const mime = getMimeType(file)
+      const headers = new Headers({
+        "Content-Type": mime,
       })
-      if (response.status >= 400) {
-        writeLog(
-          "protocol",
-          "fetch failed",
-          {
-            url: request.url,
-            file,
-            status: response.status,
-            statusText: response.statusText,
-          },
-          "error",
-        )
+      if (file.toLowerCase().endsWith(".html")) {
+        headers.set(documentPolicyHeader, jsCallStacksDocumentPolicy)
       }
-      return addDocumentPolicy(response, file)
+      return new Response(data, {
+        status: 200,
+        headers,
+      })
     } catch (error) {
       writeLog("protocol", "fetch error", { url: request.url, file, error }, "error")
       return new Response("Not found", { status: 404 })
@@ -469,13 +497,6 @@ function wireWindowRecovery(win: BrowserWindow, name: string) {
   win.webContents.on("preload-error", (_event, preloadPath, error) => {
     writeLog("preload", "preload error", { window: name, preloadPath, error }, "error")
   })
-}
-
-function addDocumentPolicy(response: Response, file: string) {
-  if (!file.toLowerCase().endsWith(".html")) return response
-  const headers = new Headers(response.headers)
-  headers.set(documentPolicyHeader, jsCallStacksDocumentPolicy)
-  return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
 }
 
 function allowRendererPermissions(win: BrowserWindow) {
