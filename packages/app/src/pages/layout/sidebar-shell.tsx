@@ -40,6 +40,7 @@ export interface SidebarContentProps {
   projects: Accessor<LocalProject[]>
   currentProject?: Accessor<LocalProject | undefined>
   currentDir?: Accessor<string>
+  onNavigateHome?: () => void
   onNewChat: (project?: LocalProject) => void
   onNavigateSession: (directory: string, sessionId: string) => void
   onNavigateProject: (directory: string) => void
@@ -241,9 +242,56 @@ function ProjectSection(props: {
 export function SidebarContent(props: SidebarContentProps): JSX.Element {
   const language = useLanguage()
   const serverSync = useServerSync()
+  const notification = useNotification()
 
   const activeProjectName = createMemo(() => {
     return props.currentProject?.()?.name || "Jerry AI IDE"
+  })
+
+  // Aggregate all notifications from projects
+  const allNotifications = createMemo(() => {
+    const projs = props.projects()
+    const items: {
+      id: string
+      type: string
+      directory: string
+      session?: string
+      sessionTitle: string
+      projectName: string
+      time: number
+      viewed: boolean
+      error?: string
+    }[] = []
+
+    projs.forEach((proj) => {
+      const pName = displayName(proj)
+      const pNotifs = notification.project.all(proj.worktree)
+      pNotifs.forEach((n, idx) => {
+        let sTitle: string | undefined
+        if (n.session) {
+          const [store] = serverSync().child(proj.worktree)
+          const found = store.session?.find((s) => s.id === n.session)
+          if (found) sTitle = sessionTitle(found.title)
+        }
+        items.push({
+          id: `${proj.worktree}-${n.session ?? ""}-${n.time}-${idx}`,
+          type: n.type,
+          directory: n.directory || proj.worktree,
+          session: n.session,
+          sessionTitle: sTitle || (n.session ? "Chat session" : pName),
+          projectName: pName,
+          time: n.time,
+          viewed: n.viewed,
+          error: n.type === "error" ? ((n as any).error?.message || "An error occurred") : undefined,
+        })
+      })
+    })
+
+    return items.sort((a, b) => b.time - a.time)
+  })
+
+  const unreadCount = createMemo(() => {
+    return allNotifications().filter((n) => !n.viewed).length
   })
 
   // Derive user info from sync or defaults
@@ -285,6 +333,7 @@ export function SidebarContent(props: SidebarContentProps): JSX.Element {
                 type="button"
                 onClick={props.onSearch}
                 class="size-7 rounded-md flex items-center justify-center text-text-weak hover:text-text-strong hover:bg-surface-base transition-colors"
+                aria-label="Search"
               >
                 <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="11" cy="11" r="8" />
@@ -294,17 +343,125 @@ export function SidebarContent(props: SidebarContentProps): JSX.Element {
             </Tooltip>
           </Show>
 
-          <Tooltip value="Notifications">
-            <button
+          {/* Notifications Dropdown */}
+          <DropdownMenu>
+            <DropdownMenu.Trigger
+              as="button"
               type="button"
-              class="size-7 rounded-md flex items-center justify-center text-text-weak hover:text-text-strong hover:bg-surface-base transition-colors"
+              class="size-7 rounded-md flex items-center justify-center text-text-weak hover:text-text-strong hover:bg-surface-base transition-colors relative"
+              aria-label="Notifications"
             >
               <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                 <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
               </svg>
-            </button>
-          </Tooltip>
+              <Show when={unreadCount() > 0}>
+                <span class="absolute top-1 right-1 size-2 rounded-full bg-[#3b82f6] ring-2 ring-background-base" />
+              </Show>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content class="w-80 p-0 shadow-lg border border-border-weak-base bg-background-base rounded-xl overflow-hidden z-50">
+                <div class="px-3.5 py-2.5 flex items-center justify-between border-b border-border-weaker-base bg-surface-base/40">
+                  <div class="flex items-center gap-2 font-medium text-[13px] text-text-strong">
+                    <span>Notifications</span>
+                    <Show when={unreadCount() > 0}>
+                      <span class="px-1.5 py-0.2 rounded-full bg-[#3b82f6]/20 text-[#3b82f6] text-[11px] font-semibold">
+                        {unreadCount()}
+                      </span>
+                    </Show>
+                  </div>
+                  <Show when={unreadCount() > 0}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        props.projects().forEach((p) => notification.project.markViewed(p.worktree))
+                      }}
+                      class="text-[11px] text-[#3b82f6] hover:underline cursor-pointer"
+                    >
+                      Mark all as read
+                    </button>
+                  </Show>
+                </div>
+
+                <div class="max-h-72 overflow-y-auto no-scrollbar py-1">
+                  <For
+                    each={allNotifications().slice(0, 15)}
+                    fallback={
+                      <div class="py-8 px-4 flex flex-col items-center justify-center text-center text-text-weak gap-2">
+                        <div class="size-9 rounded-full bg-surface-base flex items-center justify-center text-text-weak/70">
+                          <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                          </svg>
+                        </div>
+                        <div class="text-[12px] font-medium text-text-strong">No notifications</div>
+                        <div class="text-[11px] text-text-weak/80">You're all caught up with Jerry!</div>
+                      </div>
+                    }
+                  >
+                    {(notif) => (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (notif.session) {
+                            notification.session.markViewed(notif.session)
+                            if (notif.directory) props.onNavigateSession(notif.directory, notif.session)
+                          } else if (notif.directory) {
+                            notification.project.markViewed(notif.directory)
+                            props.onNavigateProject(notif.directory)
+                          }
+                        }}
+                        class="w-full px-3.5 py-2 flex items-start gap-2.5 text-left hover:bg-surface-base transition-colors cursor-pointer"
+                        classList={{
+                          "bg-surface-base/30": !notif.viewed,
+                        }}
+                      >
+                        <div class="mt-0.5 shrink-0">
+                          <Show
+                            when={notif.type === "error"}
+                            fallback={
+                              <div class="size-6 rounded-full bg-[#10b981]/15 text-[#10b981] flex items-center justify-center">
+                                <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                              </div>
+                            }
+                          >
+                            <div class="size-6 rounded-full bg-[#ef4444]/15 text-[#ef4444] flex items-center justify-center">
+                              <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                              </svg>
+                            </div>
+                          </Show>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center justify-between gap-1">
+                            <span class="text-[12px] font-medium text-text-strong truncate">
+                              {notif.sessionTitle}
+                            </span>
+                            <span class="text-[10px] text-text-weak shrink-0 font-mono">
+                              {formatShortTime(notif.time)}
+                            </span>
+                          </div>
+                          <div class="text-[11px] text-text-weak truncate mt-0.5">
+                            {notif.type === "turn-complete" ? "Jerry completed the task." : (notif.error || "Session updated.")}
+                          </div>
+                          <div class="text-[10px] text-text-weak/70 truncate mt-0.5">
+                            {notif.projectName}
+                          </div>
+                        </div>
+                        <Show when={!notif.viewed}>
+                          <span class="size-1.5 rounded-full bg-[#3b82f6] shrink-0 mt-2" />
+                        </Show>
+                      </button>
+                    )}
+                  </For>
+                </div>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu>
 
           <Show when={props.onToggleSidebar}>
             <Tooltip value="Toggle sidebar">
@@ -325,6 +482,20 @@ export function SidebarContent(props: SidebarContentProps): JSX.Element {
 
       {/* Main Nav Items */}
       <div class="px-2 pt-2.5 flex flex-col gap-1 shrink-0">
+        <Show when={props.onNavigateHome}>
+          <button
+            type="button"
+            onClick={props.onNavigateHome}
+            class="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg text-text-base hover:text-text-strong hover:bg-surface-base transition-colors font-medium cursor-pointer"
+          >
+            <svg class="size-4 text-text-weak" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>Home</span>
+          </button>
+        </Show>
+
         <button
           type="button"
           onClick={() => props.onNewChat()}

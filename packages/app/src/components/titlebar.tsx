@@ -378,6 +378,15 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
                 <Show when={windows() || linux()}>
                   <WindowsAppMenu command={command} platform={platform} variant="v2" />
                 </Show>
+                <TooltipV2 placement="bottom" value={language.t("home.title")}>
+                  <IconButtonV2
+                    variant="ghost-muted"
+                    size="large"
+                    icon={<IconV2 name="grid-plus" />}
+                    onClick={toggleHome}
+                    aria-label={language.t("home.title")}
+                  />
+                </TooltipV2>
                 <div class="flex-1" />
                 <TitlebarV2Right state={v2RightState()} />
               </div>
@@ -560,13 +569,6 @@ function TitlebarV2Right(props: { state: TitlebarV2RightState }) {
       <Show when={props.state.update.visible}>
         <TitlebarUpdateIconButton state={props.state.update} />
       </Show>
-      <button
-        type="button"
-        class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-text-muted hover:text-text-strong border border-white/10 hover:border-white/20 bg-white/[0.03] hover:bg-white/[0.08] transition-colors"
-      >
-        <IconV2 name="monitor" size="small" class="text-icon-muted" />
-        <span>Install IDE</span>
-      </button>
       <div id="opencode-titlebar-right" class="flex shrink-0 items-center justify-end gap-0" />
     </div>
   )

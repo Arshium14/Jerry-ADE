@@ -127,7 +127,11 @@ export default function NewLayout(props: ParentProps) {
               }}
               onOpenSettings={openSettings}
               onOpenHelp={() => platform.openExternal("https://opencode.ai/desktop-feedback")}
-              onSearch={() => command.trigger("file.search")}
+              onNavigateHome={() => navigate("/")}
+              onSearch={async () => {
+                const { DialogSelectFile } = await import("@/components/dialog-select-file")
+                dialog.show(() => <DialogSelectFile />)
+              }}
               onToggleSidebar={() => layout.sidebar.toggle()}
             />
             <div class="absolute inset-y-0 end-0 z-30 w-0 overflow-visible">
