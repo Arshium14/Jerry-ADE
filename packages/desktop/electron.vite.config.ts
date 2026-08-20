@@ -2,6 +2,7 @@ import { sentryVitePlugin } from "@sentry/vite-plugin"
 import { defineConfig } from "electron-vite"
 import appPlugin from "@opencode-ai/app/vite"
 import * as fs from "node:fs/promises"
+import { resolve } from "node:path"
 
 const OPENCODE_SERVER_DIST = "../opencode/dist/node"
 
@@ -98,7 +99,7 @@ const require = __cjs_mod__.createRequire(import.meta.url);
       sourcemap: true,
       rollupOptions: {
         input: {
-          main: "src/renderer/index.html",
+          index: resolve(import.meta.dirname, "src/renderer/index.html"),
         },
       },
     },
