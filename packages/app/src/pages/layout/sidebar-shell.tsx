@@ -306,8 +306,15 @@ export function SidebarContent(props: SidebarContentProps): JSX.Element {
   return (
     <div class="flex flex-col h-full w-full bg-background-base border-r border-border-weak-base select-none overflow-hidden text-[13px]">
       {/* Top Header */}
-      <div class="h-12 shrink-0 px-2.5 flex items-center justify-between border-b border-border-weaker-base">
-        <div class="flex items-center gap-1 min-w-0">
+      <div
+        class="h-11 shrink-0 px-2.5 flex items-center justify-between border-b border-border-weaker-base select-none"
+        data-tauri-drag-region
+        style={{
+          "-webkit-app-region": "drag",
+          "padding-left": platform.platform === "desktop" && platform.os === "macos" ? "72px" : "10px",
+        }}
+      >
+        <div class="flex items-center gap-1 min-w-0" style={{ "-webkit-app-region": "no-drag" }}>
           <Show when={platform.platform === "desktop"}>
             <WindowsAppMenu command={command} platform={platform} variant="v2" />
           </Show>
@@ -336,7 +343,7 @@ export function SidebarContent(props: SidebarContentProps): JSX.Element {
           </DropdownMenu>
         </div>
 
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1" style={{ "-webkit-app-region": "no-drag" }}>
           <Show when={props.onSearch}>
             <Tooltip value="Search (Ctrl+P / Cmd+P)">
               <button
