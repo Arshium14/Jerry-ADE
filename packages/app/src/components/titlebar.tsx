@@ -369,24 +369,6 @@ export function Titlebar(props: { update?: TitlebarUpdate; debugTools?: { visibl
                   "md:pl-4": !macTrafficLights(),
                 }}
               >
-                <div class="flex items-center gap-2 shrink-0 mr-1">
-                  <JerryMark class="size-5 shrink-0" />
-                  <span class="text-[13px] font-semibold text-text-strong font-mono tracking-tight hidden md:inline">
-                    Jerry
-                  </span>
-                </div>
-                <Show when={windows() || linux()}>
-                  <WindowsAppMenu command={command} platform={platform} variant="v2" />
-                </Show>
-                <TooltipV2 placement="bottom" value={language.t("home.title")}>
-                  <IconButtonV2
-                    variant="ghost-muted"
-                    size="large"
-                    icon={<IconV2 name="grid-plus" />}
-                    onClick={toggleHome}
-                    aria-label={language.t("home.title")}
-                  />
-                </TooltipV2>
                 <div class="flex-1" />
                 <TitlebarV2Right state={v2RightState()} />
               </div>

@@ -15,6 +15,9 @@ import { useServerSync } from "@/context/server-sync"
 import { useNotification } from "@/context/notification"
 import { usePermission } from "@/context/permission"
 import { useLanguage } from "@/context/language"
+import { usePlatform } from "@/context/platform"
+import { useCommand } from "@/context/command"
+import { WindowsAppMenu } from "@/components/windows-app-menu"
 import { sessionTitle } from "@/utils/session-title"
 import { displayName, sortedRootSessions } from "./helpers"
 
@@ -243,6 +246,8 @@ export function SidebarContent(props: SidebarContentProps): JSX.Element {
   const language = useLanguage()
   const serverSync = useServerSync()
   const notification = useNotification()
+  const platform = usePlatform()
+  const command = useCommand()
 
   const activeProjectName = createMemo(() => {
     return props.currentProject?.()?.name || "Jerry AI IDE"
@@ -301,30 +306,35 @@ export function SidebarContent(props: SidebarContentProps): JSX.Element {
   return (
     <div class="flex flex-col h-full w-full bg-background-base border-r border-border-weak-base select-none overflow-hidden text-[13px]">
       {/* Top Header */}
-      <div class="h-12 shrink-0 px-3 flex items-center justify-between border-b border-border-weaker-base">
-        <DropdownMenu>
-          <DropdownMenu.Trigger
-            as="button"
-            type="button"
-            class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-surface-base transition-colors font-medium text-text-strong text-[13px] focus:outline-none"
-          >
-            <img src="/jerry.png" alt="Jerry" class="size-5 rounded object-contain" />
-            <span class="font-semibold tracking-tight">Jerry</span>
-            <svg class="size-3.5 text-text-weak" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content class="min-w-48">
-              <DropdownMenu.Item onSelect={props.onOpenProject}>
-                <DropdownMenu.ItemLabel>Open Project Folder...</DropdownMenu.ItemLabel>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onSelect={props.onOpenSettings}>
-                <DropdownMenu.ItemLabel>Settings</DropdownMenu.ItemLabel>
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu>
+      <div class="h-12 shrink-0 px-2.5 flex items-center justify-between border-b border-border-weaker-base">
+        <div class="flex items-center gap-1 min-w-0">
+          <Show when={platform.platform === "desktop"}>
+            <WindowsAppMenu command={command} platform={platform} variant="v2" />
+          </Show>
+          <DropdownMenu>
+            <DropdownMenu.Trigger
+              as="button"
+              type="button"
+              class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-surface-base transition-colors font-medium text-text-strong text-[13px] focus:outline-none"
+            >
+              <img src="/jerry.png" alt="Jerry" class="size-5 rounded object-contain" />
+              <span class="font-semibold tracking-tight">Jerry</span>
+              <svg class="size-3.5 text-text-weak" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content class="min-w-48">
+                <DropdownMenu.Item onSelect={props.onOpenProject}>
+                  <DropdownMenu.ItemLabel>Open Project Folder...</DropdownMenu.ItemLabel>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onSelect={props.onOpenSettings}>
+                  <DropdownMenu.ItemLabel>Settings</DropdownMenu.ItemLabel>
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu>
+        </div>
 
         <div class="flex items-center gap-1">
           <Show when={props.onSearch}>
